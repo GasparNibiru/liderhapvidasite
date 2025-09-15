@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="pt-BR" x-data x-init="$store.site.init()">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Plano de SaÃºde Hapvida â€” CotaÃ§Ã£o RÃ¡pida (independente)</title>
+  <link rel="icon" type="image/png" href="https://agencialungo.com.br/wp-content/uploads/2025/08/Design-sem-nome-26-1.png">
+  <meta name="description" content="FaÃ§a cotaÃ§Ã£o de Plano de SaÃºde Hapvida. Compare hospitais, procedimentos, carÃªncias e envie seus dados pelo WhatsApp.">
+  <style>
+    html, body { scroll-behavior: smooth; }
+    summary::-webkit-details-marker { display: none; }
+    details { transition: box-shadow 0.2s ease; }
+
+    /* BotÃ£o flutuante - pulso */
+    @keyframes pulseScale {
+      0%   { transform: scale(1);   box-shadow: 0 0 0 0 rgba(245,130,32,0.55); }
+      70%  { transform: scale(1.06); box-shadow: 0 0 0 18px rgba(245,130,32,0); }
+      100% { transform: scale(1);   box-shadow: 0 0 0 0 rgba(245,130,32,0); }
+    }
+    .fab-pulse { animation: pulseScale 2.2s ease-in-out infinite; }
+  </style>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0057A3',
+            primaryDark: '#003B73',
+            accent: '#F58220',
+            ink: '#0F172A',
+            mist: '#F5F7FA',
+            success: '#16a34a',
+            warn: '#b45309'
+          },
+          boxShadow: { soft: '0 10px 25px rgba(0,0,0,0.08)' }
+        }
+      }
+    }
+  </script>
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.0/dist/cdn.min.js"></script>
+</head>
+<body class="bg-mist text-ink antialiased">
+
+  <!-- Header -->
+  <header class="bg-white shadow-soft sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="https://agencialungo.com.br/wp-content/uploads/2025/08/hapvida-1.png"
+             alt="Hapvida (ilustrativa)"
+             class="h-12 w-auto object-contain">
+      </div>
+
+      <!-- NavegaÃ§Ã£o desktop -->
+      <nav class="hidden md:flex items-center gap-6 text-sm">
+        <a href="#hospitais" class="hover:text-primary">Hospitais</a>
+        <a href="#procedimentos" class="hover:text-primary">Procedimentos</a>
+        <a href="#carencias" class="hover:text-primary">CarÃªncias</a>
+        <a href="#planos" class="hover:text-primary">Planos</a>
+        <a href="#faq" class="hover:text-primary">FAQ</a>
+      </nav>
+
+      <!-- AÃ§Ãµes: CTA (redireciona Whats) + menu mobile -->
+      <div class="flex items-center gap-2">
+        <button
+           class="md:inline-flex hidden px-4 py-2 bg-accent text-white rounded-lg hover:opacity-90"
+           @click="$store.site.openCTAWhats()">
+           Fazer cotaÃ§Ã£o
+        </button>
+
+        <!-- BotÃ£o menu mobile -->
+        <button class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg border border-ink/10"
+                @click="$store.site.ui.mobileMenuOpen = !$store.site.ui.mobileMenuOpen"
+                :aria-expanded="$store.site.ui.mobileMenuOpen"
+                aria-label="Abrir menu">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Dropdown do menu mobile -->
+    <div x-show="$store.site.ui.mobileMenuOpen" x-transition.origin.top class="md:hidden border-t border-ink/10 bg-white">
+      <div class="max-w-7xl mx-auto px-4 py-3 grid gap-3 text-sm">
+        <a href="#hospitais" class="py-2" @click="$store.site.ui.mobileMenuOpen=false">Hospitais</a>
+        <a href="#procedimentos" class="py-2" @click="$store.site.ui.mobileMenuOpen=false">Procedimentos</a>
+        <a href="#carencias" class="py-2" @click="$store.site.ui.mobileMenuOpen=false">CarÃªncias</a>
+        <a href="#planos" class="py-2" @click="$store.site.ui.mobileMenuOpen=false">Planos</a>
+        <a href="#faq" class="py-2" @click="$store.site.ui.mobileMenuOpen=false">FAQ</a>
+        <button
+          class="py-2 font-semibold text-white bg-accent rounded-lg text-center"
+          @click.prevent="$store.site.openCTAWhats(); $store.site.ui.mobileMenuOpen=false">
+          Fazer cotaÃ§Ã£o
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="bg-gradient-to-br from-primary to-primaryDark text-white">
+    <div class="max-w-7xl mx-auto px-4 py-16 grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <h1 class="text-3xl md:text-5xl font-bold leading-tight">Planos de SaÃºde Hapvida: cotaÃ§Ã£o rÃ¡pida e atendimento nacional</h1>
+        <p class="mt-4 text-white/90">ContrataÃ§Ã£o com CNPJ MEI, ME, EIRELI ou Ltda. Melhores preÃ§os do Brasil!</p>
+        <div class="mt-8 flex flex-col sm:flex-row gap-3">
+          <a class="px-5 py-3 bg-white text-primaryDark font-semibold rounded-lg hover:opacity-90"
+             href="#planos">Comparar planos agora</a>
+          <a class="px-5 py-3 bg-accent text-white font-semibold rounded-lg hover:opacity-90"
+             href="#hospitais">Ver rede por cidade</a>
+        </div>
+      </div>
+
+      <!-- Slider (3 imagens) -->
+      <div class="relative rounded-2xl shadow-soft overflow-hidden h-64 sm:h-72 md:h-80 bg-white/10"
+           x-data="{
+             imgs: [
+               {src: 'https://agencialungo.com.br/wp-content/uploads/2025/08/1-1.png', alt: 'Atendimento mÃ©dico 1'},
+               {src: 'https://agencialungo.com.br/wp-content/uploads/2025/08/2-1.png', alt: 'Atendimento mÃ©dico 2'},
+               {src: 'https://agencialungo.com.br/wp-content/uploads/2025/08/3-1.png', alt: 'Atendimento mÃ©dico 3'}
+             ],
+             i: 0, timer: null,
+             start(){ if(this.timer) return; this.timer = setInterval(()=>{ this.next() }, 4000) },
+             stop(){ if(this.timer){ clearInterval(this.timer); this.timer=null } },
+             next(){ this.i = (this.i + 1) % this.imgs.length },
+             prev(){ this.i = (this.i - 1 + this.imgs.length) % this.imgs.length }
+           }"
+           x-init="start()" @mouseenter="stop()" @mouseleave="start()" role="region" aria-label="Galeria Hero">
+        <template x-for="(img, idx) in imgs" :key="img.src">
+          <img :src="img.src" :alt="img.alt"
+               class="absolute inset-0 w-full h-full object-contain md:object-cover transition-opacity duration-700"
+               :class="idx === i ? 'opacity-100' : 'opacity-0'"
+               :loading="idx === 0 ? 'eager' : 'lazy'">
+        </template>
+        <button @click="prev()" aria-label="Anterior"
+                class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 text-white rounded-full w-9 h-9 grid place-items-center hover:bg-black/40">â€¹</button>
+        <button @click="next()" aria-label="PrÃ³xima"
+                class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 text-white rounded-full w-9 h-9 grid place-items-center hover:bg-black/40">â€º</button>
+        <div class="absolute bottom-3 inset-x-0 flex justify-center gap-2">
+          <template x-for="(img, idx) in imgs" :key="idx">
+            <button @click="i = idx" :aria-label="'Ir para slide ' + (idx+1)"
+                    class="w-2.5 h-2.5 rounded-full"
+                    :class="idx === i ? 'bg-white' : 'bg-white/50'"></button>
+          </template>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOSPITAIS -->
+  <section id="hospitais" class="max-w-7xl mx-auto px-4 py-12">
+    <div class="flex items-end justify-between flex-wrap gap-4">
+      <div>
+        <h2 class="text-2xl md:text-3xl font-bold">Hospitais por UF e cidade</h2>
+        <p class="text-ink/70 text-sm">Filtre por <strong>UF</strong>, <strong>cidade</strong>, <strong>serviÃ§o</strong> ou pesquise por nome/endereÃ§o. â€œPrÃ³priaâ€ = unidade Hapvida; â€œCredenciadaâ€ = parceira.</p>
+      </div>
+      <div class="flex flex-wrap gap-3 items-center">
+        <select x-model="$store.site.hosp.uf" class="px-4 py-2 rounded-lg border border-ink/10 bg-white shadow-soft">
+          <option value="">UF (todas)</option>
+          <template x-for="u in $store.site.hosp.ufs" :key="u"><option :value="u" x-text="u"></option></template>
+        </select>
+        <select x-model="$store.site.hosp.cidade" class="px-4 py-2 rounded-lg border border-ink/10 bg-white shadow-soft">
+          <option value="">Cidade (todas)</option>
+          <template x-for="c in $store.site.hosp.cidades" :key="c"><option :value="c" x-text="c"></option></template>
+        </select>
+        <select x-model="$store.site.hosp.tipo" class="px-4 py-2 rounded-lg border border-ink/10 bg-white shadow-soft">
+          <option value="">Tipo de serviÃ§o</option>
+          <option>Pronto Atendimento</option>
+          <option>InternaÃ§Ã£o</option>
+          <option>Ambulatorial</option>
+          <option>Maternidade</option>
+        </select>
+        <input x-model="$store.site.hosp.busca" type="search" placeholder="Buscar por nome/endereÃ§o..."
+               class="px-4 py-2 rounded-lg border border-ink/10 bg-white shadow-soft min-w-[240px]">
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+      <template x-for="h in $store.site.hosp.filtrados" :key="h.id">
+        <article class="bg-white rounded-2xl shadow-soft p-5 flex flex-col">
+          <div class="flex items-center justify-between gap-4">
+            <h3 class="text-lg font-semibold" x-text="h.nome"></h3>
+            <span class="text-xs px-2 py-1 rounded border"
+                  :class="h.rede==='PrÃ³pria' ? 'border-success/30 text-success bg-success/10' : 'border-warn/30 text-warn bg-warn/10'"
+                  x-text="h.rede"></span>
+          </div>
+          <p class="text-sm text-ink/60 mt-1"><span x-text="h.cidade"></span> â€” <span x-text="h.uf"></span></p>
+          <p class="text-sm text-ink/70 mt-1" x-text="h.endereco"></p>
+          <ul class="text-sm text-ink/80 mt-3 list-disc pl-5 space-y-1">
+            <template x-for="s in h.servicos" :key="s">
+              <li x-text="s"></li>
+            </template>
+          </ul>
+          <div class="mt-5 flex gap-3">
+            <button @click="$store.site.openCotacao(h.nome)" class="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90">Cotar neste hospital</button>
+            <button @click="$store.site.openCotacao(h.nome)" class="px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary/5">Ver planos</button>
+          </div>
+        </article>
+      </template>
+    </div>
+  </section>
+
+  <!-- PROCEDIMENTOS -->
+  <section id="procedimentos" class="bg-white">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+      <h2 class="text-2xl md:text-3xl font-bold">Procedimentos (exemplos)</h2>
+      <p class="text-ink/70 text-sm">Coberturas variam conforme plano/regiÃ£o. Consulte contrato e ANS.</p>
+
+      <div class="mt-6 space-y-4">
+        <template x-for="(sec, idx) in $store.site.procedimentos" :key="idx">
+          <details class="bg-mist rounded-2xl shadow-soft p-4 group open:shadow-soft">
+            <summary class="cursor-pointer list-none font-semibold flex items-center justify-between">
+              <span x-text="sec.especialidade"></span>
+              <svg class="w-5 h-5 transition -rotate-90 group-open:rotate-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.25a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08Z" clip-rule="evenodd"/></svg>
+            </summary>
+            <ul class="mt-3 grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-ink/80 list-disc pl-5">
+              <template x-for="item in sec.itens" :key="item">
+                <li x-text="item"></li>
+              </template>
+            </ul>
+          </details>
+        </template>
+      </div>
+    </div>
+  </section>
+
+  <!-- CARÃŠNCIAS -->
+  <section id="carencias" class="max-w-7xl mx-auto px-4 py-12">
+    <h2 class="text-2xl md:text-3xl font-bold">CarÃªncias (exemplo ilustrativo)</h2>
+    <p class="text-ink/70 text-sm">InformaÃ§Ãµes podem mudar. Verifique condiÃ§Ãµes especÃ­ficas de cada plano.</p>
+
+    <div class="mt-6 overflow-x-auto">
+      <table class="min-w-full bg-white rounded-2xl shadow-soft">
+        <thead>
+          <tr class="text-left text-sm text-ink/60 border-b">
+            <th class="p-4">Item</th>
+            <th class="p-4">CarÃªncia (dias)</th>
+            <th class="p-4">ObservaÃ§Ãµes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="c in $store.site.carencias" :key="c.item">
+            <tr class="border-b last:border-none">
+              <td class="p-4" x-text="c.item"></td>
+              <td class="p-4" x-text="c.dias"></td>
+              <td class="p-4" x-text="c.obs || ''"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- PLANOS MAIS PROCURADOS -->
+  <section id="planos" class="bg-white">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+      <div class="flex items-end justify-between">
+        <h2 class="text-2xl md:text-3xl font-bold">Planos mais procurados</h2>
+        <p class="text-sm text-ink/60">Valores â€œa partir deâ€, variam por regiÃ£o/idade.</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <template x-for="p in $store.site.planos" :key="p.id">
+          <article class="bg-mist rounded-2xl shadow-soft p-5 flex flex-col">
+            <h3 class="text-lg font-semibold" x-text="p.rotulo"></h3>
+            <p class="text-xs mt-1"><span class="uppercase bg-white px-2 py-1 rounded border border-ink/10" x-text="p.tipo"></span></p>
+            <p class="mt-3 text-ink/80"><strong>A partir:</strong> <span x-text="p.precoDesde"></span></p>
+            <p class="text-sm text-ink/70"><strong>Rede:</strong> <span x-text="p.redeResumo"></span></p>
+            <div class="mt-5 flex gap-3">
+              <button @click="$store.site.openDetalhes(p)" class="px-4 py-2 bg-white border border-ink/10 rounded-lg hover:bg-white/70">Ver detalhes</button>
+              <!-- ALTERADO: agora abre o formulÃ¡rio de cotaÃ§Ã£o preenchendo o plano -->
+              <button class="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90"
+                      @click="$store.site.openCotacao(null, p)">
+                Fazer cotaÃ§Ã£o
+              </button>
+            </div>
+          </article>
+        </template>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="max-w-7xl mx-auto px-4 py-12">
+    <h2 class="text-2xl md:text-3xl font-bold">Perguntas frequentes</h2>
+    <div class="mt-6 space-y-4">
+      <details class="bg-white rounded-2xl shadow-soft p-4">
+        <summary class="font-semibold cursor-pointer">Quais documentos preciso para contratar?</summary>
+        <p class="mt-2 text-ink/80 text-sm">RG, CPF, comprovante de endereÃ§o, CNPJ (para PJ), e demais documentos que a operadora solicitar para anÃ¡lise.</p>
+      </details>
+      <details class="bg-white rounded-2xl shadow-soft p-4">
+        <summary class="font-semibold cursor-pointer">Como funcionam as carÃªncias?</summary>
+        <p class="mt-2 text-ink/80 text-sm">As carÃªncias variam por plano/regiÃ£o. Consulte a tabela ilustrativa acima e confirme com a operadora/ANS.</p>
+      </details>
+      <details class="bg-white rounded-2xl shadow-soft p-4">
+        <summary class="font-semibold cursor-pointer">Quando recebo a carteirinha?</summary>
+        <p class="mt-2 text-ink/80 text-sm">ApÃ³s aprovaÃ§Ã£o e emissÃ£o, a carteirinha digital costuma ser liberada rapidamente no app da operadora.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- CTA final -->
+  <section class="bg-primary text-white">
+    <div class="max-w-7xl mx-auto px-4 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div>
+        <h3 class="text-2xl font-bold">Pronto para cotar seu plano Hapvida?</h3>
+        <p class="text-white/90">Atendimento humano via WhatsApp. Sem compromisso.</p>
+      </div>
+      <!-- nÃ£o-formulÃ¡rio: redireciona direto -->
+      <button class="px-5 py-3 bg-accent text-white font-semibold rounded-lg hover:opacity-90"
+              @click="$store.site.openCTAWhats()">
+        Fazer cotaÃ§Ã£o
+      </button>
+    </div>
+  </section>
+
+  <!-- RodapÃ© -->
+  <footer class="bg-white">
+    <div class="max-w-7xl mx-auto px-4 py-10 text-sm text-ink/70">
+      <div class="grid md:grid-cols-3 gap-8">
+        <div>
+          <h4 class="font-semibold text-ink">Sobre</h4>
+          <p class="mt-2">
+            Planos de saÃºde para pessoa fÃ­sica e pessoa jurÃ­dica, corretora LÃ­der como agente autorizado de vendas.
+          </p>
+        </div>
+        <div>
+          <h4 class="font-semibold text-ink">Privacidade</h4>
+          <p class="mt-2">Seus dados sÃ£o usados exclusivamente para viabilizar a cotaÃ§Ã£o. NÃ£o compartilhamos com terceiros sem consentimento.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold text-ink">Contato</h4>
+          <p class="mt-2">WhatsApp: <span class="text-primary">+55 21 99562-1375</span></p>
+        </div>
+      </div>
+      <p class="mt-8">&copy; <span id="year"></span> CotaÃ§Ã£o Hapvida â€” Independente.</p>
+    </div>
+  </footer>
+
+  <!-- BotÃ£o flutuante WhatsApp (MOBILE) com imagem, pulso e notificaÃ§Ã£o -->
+  <button
+    class="fixed bottom-4 right-4 md:hidden z-40"
+    aria-label="Conversar no WhatsApp"
+    title="Conversar no WhatsApp"
+    @click="$store.site.openCTAWhats()">
+    <div class="relative">
+      <img
+        src="https://agencialungo.com.br/wp-content/uploads/2025/08/Design-sem-nome-26.png"
+        alt="Falar no WhatsApp"
+        class="w-16 h-16 rounded-full shadow-soft fab-pulse select-none pointer-events-none"
+        draggable="false"
+        loading="lazy"
+      />
+      <!-- bolinha vermelha -->
+      <span class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-600 rounded-full ring-2 ring-white"></span>
+      <!-- aura de ping -->
+      <span class="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-red-500/30 animate-ping"></span>
+    </div>
+  </button>
+
+  <!-- Modais -->
+  <div x-show="$store.site.modalDetalhes.aberto" x-transition.opacity class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" @keydown.escape.prevent="$store.site.closeDetalhes()">
+    <div class="bg-white rounded-2xl shadow-soft max-w-xl w-full p-6" @click.outside="$store.site.closeDetalhes()">
+      <h3 class="text-xl font-bold" x-text="$store.site.modalDetalhes.plano?.rotulo || 'Detalhes do plano'"></h3>
+      <div class="mt-3 text-sm text-ink/80 space-y-2">
+        <p><strong>Tipo:</strong> <span x-text="$store.site.modalDetalhes.plano?.tipo"></span></p>
+        <p><strong>Rede:</strong> <span x-text="$store.site.modalDetalhes.plano?.redeResumo"></span></p>
+        <template x-if="$store.site.modalDetalhes.hospital">
+          <p><strong>Hospital sugerido:</strong> <span x-text="$store.site.modalDetalhes.hospital"></span></p>
+        </template>
+        <p class="text-ink/60 text-xs">As informaÃ§Ãµes sÃ£o ilustrativas e podem mudar.</p>
+      </div>
+      <div class="mt-6 flex justify-end gap-3">
+        <button class="px-4 py-2 rounded-lg border" @click="$store.site.closeDetalhes()">Fechar</button>
+        <!-- nÃ£o-formulÃ¡rio: redireciona direto -->
+        <button class="px-4 py-2 rounded-lg bg-primary text-white" @click="$store.site.openCTAWhats()">Fazer cotaÃ§Ã£o</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="cotacao" x-show="$store.site.modalCotacao.aberto" x-transition.opacity class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" @keydown.escape.prevent="$store.site.closeCotacao()">
+    <div class="bg-white rounded-2xl shadow-soft max-w-2xl w-full p-6 overflow-y-auto max-h-[90vh]" @click.outside="$store.site.closeCotacao()">
+      <h3 class="text-xl font-bold">Solicitar cotaÃ§Ã£o</h3>
+      <p class="text-sm text-ink/70">Preencha seus dados. Usaremos apenas para retorno da cotaÃ§Ã£o.</p>
+
+      <form class="mt-4 grid md:grid-cols-2 gap-4" @submit.prevent="$store.site.enviarCotacao()">
+        <div>
+          <label class="block text-sm font-medium">Nome*</label>
+          <input x-model="$store.site.form.nome" type="text" required class="mt-1 w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">WhatsApp*</label>
+          <input x-model="$store.site.form.whats" type="tel" placeholder="+55 55 99210-2864" required class="mt-1 w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">E-mail</label>
+          <input x-model="$store.site.form.email" type="email" class="mt-1 w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Tem CNPJ?*</label>
+          <select x-model="$store.site.form.temCnpj" required class="mt-1 w-full px-3 py-2 border rounded-lg">
+            <option value="">Selecione</option>
+            <option>Sim</option>
+            <option>NÃ£o</option>
+          </select>
+        </div>
+        <template x-if="$store.site.form.temCnpj === 'Sim'">
+          <div>
+            <label class="block text-sm font-medium">CNPJ</label>
+            <input x-model="$store.site.form.cnpj" type="text" placeholder="00.000.000/0001-00" class="mt-1 w-full px-3 py-2 border rounded-lg">
+          </div>
+        </template>
+        <div>
+          <label class="block text-sm font-medium">Plano de interesse</label>
+          <select x-model="$store.site.form.plano" class="mt-1 w-full px-3 py-2 border rounded-lg">
+            <option value="">Selecione</option>
+            <template x-for="p in $store.site.planos" :key="p.id">
+              <option :value="p.rotulo" x-text="p.rotulo"></option>
+            </template>
+          </select>
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium">Hospital preferido</label>
+          <input x-model="$store.site.form.hospital" type="text" placeholder="Sem preferÃªncia" class="mt-1 w-full px-3 py-2 border rounded-lg">
+        </div>
+
+        <div class="md:col-span-2">
+          <h4 class="font-semibold mt-2">DistribuiÃ§Ã£o de vidas por faixa etÃ¡ria</h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mt-2">
+            <template x-for="faixa in $store.site.faixas" :key="faixa.key">
+              <div>
+                <label class="block text-xs text-ink/70" x-text="faixa.rotulo"></label>
+                <input type="number" min="0" class="mt-1 w-full px-2 py-2 border rounded-lg"
+                       x-model.number="$store.site.form.faixas[faixa.key]">
+              </div>
+            </template>
+          </div>
+          <div class="flex items-center gap-3 mt-3">
+            <button type="button" class="px-3 py-2 border rounded-lg" @click="$store.site.calcularVidas()">Calcular total</button>
+            <span class="text-sm">Total de vidas: <strong x-text="$store.site.form.totalVidas"></strong></span>
+          </div>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium">ObservaÃ§Ãµes</label>
+          <textarea x-model="$store.site.form.obs" rows="3" class="mt-1 w-full px-3 py-2 border rounded-lg"></textarea>
+        </div>
+
+        <div class="md:col-span-2 flex justify-end gap-3 mt-2">
+          <button type="button" class="px-4 py-2 rounded-lg border" @click="$store.site.closeCotacao()">Cancelar</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-primary text-white">Fazer CotaÃ§Ã£o no WhatsApp</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Store / LÃ³gica -->
+  <script>
+    document.addEventListener('alpine:init', () => {
+      Alpine.store('site', {
+        ui: { mobileMenuOpen: false },
+
+        // NÃºmero WhatsApp (sÃ³ dÃ­gitos para wa.me)
+        whatsNumberDigits: '5521995621375',
+
+        abrirWhatsComMensagem(msg) {
+          const url = `https://wa.me/${this.whatsNumberDigits}?text=${encodeURIComponent(msg)}`;
+          window.open(url, '_blank', 'noopener');
+        },
+
+        openCTAWhats() {
+          const msg = 'OlÃ¡, gostaria de saber mais sobre o Plano de saÃºde Hapvida, vim do site';
+          this.abrirWhatsComMensagem(msg);
+        },
+
+        // ===== HOSPITAIS (SP e RJ - exemplos ilustrativos) =====
+        hospitais: [
+          // SP - Capital e regiÃ£o metropolitana
+          {id:'sp-spc', nome:'Hospital Paulista Centro', cidade:'SÃ£o Paulo', uf:'SP', rede:'PrÃ³pria', endereco:'Av. Paulista, 1000 â€“ Bela Vista', servicos:['Pronto Atendimento','InternaÃ§Ã£o','Ambulatorial']},
+          {id:'sp-vm',  nome:'Pronto Atendimento Vila Mariana', cidade:'SÃ£o Paulo', uf:'SP', rede:'PrÃ³pria', endereco:'Rua Domingos de Morais, 500 â€“ Vila Mariana', servicos:['Pronto Atendimento']},
+          {id:'sp-jd',  nome:'Maternidade Jardins', cidade:'SÃ£o Paulo', uf:'SP', rede:'Credenciada', endereco:'Al. JaÃº, 2000 â€“ Jardins', servicos:['Maternidade','InternaÃ§Ã£o']},
+          {id:'sp-oc',  nome:'Hospital Osasco Centro', cidade:'Osasco', uf:'SP', rede:'Credenciada', endereco:'Av. dos Autonomistas, 1200 â€“ Centro', servicos:['Pronto Atendimento','InternaÃ§Ã£o']},
+          {id:'sp-sa',  nome:'Hospital Santo AndrÃ©', cidade:'Santo AndrÃ©', uf:'SP', rede:'PrÃ³pria', endereco:'Av. Industrial, 900 â€“ Campestre', servicos:['InternaÃ§Ã£o','Ambulatorial']},
+          {id:'sp-gru', nome:'ClÃ­nica GRU â€“ Guarulhos', cidade:'Guarulhos', uf:'SP', rede:'Credenciada', endereco:'Av. Salgado Filho, 450 â€“ Centro', servicos:['Ambulatorial']},
+          {id:'sp-cps', nome:'Hospital Campinas Norte', cidade:'Campinas', uf:'SP', rede:'PrÃ³pria', endereco:'Av. John Boyd Dunlop, 3000 â€“ Pq. Fac. II', servicos:['Pronto Atendimento','InternaÃ§Ã£o']},
+          {id:'sp-sbc', nome:'Hospital SÃ£o Bernardo', cidade:'SÃ£o Bernardo do Campo', uf:'SP', rede:'Credenciada', endereco:'Av. Senador Vergueiro, 1500 â€“ Centro', servicos:['InternaÃ§Ã£o','Ambulatorial']},
+
+          // RJ - Capital e regiÃ£o metropolitana
+          {id:'rj-rjz', nome:'Hospital Zona Sul', cidade:'Rio de Janeiro', uf:'RJ', rede:'PrÃ³pria', endereco:'Rua Visconde de PirajÃ¡, 700 â€“ Ipanema', servicos:['Pronto Atendimento','InternaÃ§Ã£o','Ambulatorial']},
+          {id:'rj-tij', nome:'Pronto Atendimento Tijuca', cidade:'Rio de Janeiro', uf:'RJ', rede:'PrÃ³pria', endereco:'Rua Conde de Bonfim, 600 â€“ Tijuca', servicos:['Pronto Atendimento']},
+          {id:'rj-bar', nome:'ClÃ­nica Barra', cidade:'Rio de Janeiro', uf:'RJ', rede:'Credenciada', endereco:'Av. das AmÃ©ricas, 5000 â€“ Barra da Tijuca', servicos:['Ambulatorial']},
+          {id:'rj-nit', nome:'Hospital NiterÃ³i Centro', cidade:'NiterÃ³i', uf:'RJ', rede:'Credenciada', endereco:'Rua da ConceiÃ§Ã£o, 100 â€“ Centro', servicos:['InternaÃ§Ã£o','Ambulatorial']},
+          {id:'rj-dc',  nome:'Hospital Duque de Caxias', cidade:'Duque de Caxias', uf:'RJ', rede:'PrÃ³pria', endereco:'Av. Presidente Kennedy, 900 â€“ Centro', servicos:['Pronto Atendimento','InternaÃ§Ã£o']},
+          {id:'rj-ni',  nome:'Maternidade Nova IguaÃ§u', cidade:'Nova IguaÃ§u', uf:'RJ', rede:'Credenciada', endereco:'Av. AbÃ­lio Augusto TÃ¡vora, 2000 â€“ Centro', servicos:['Maternidade','InternaÃ§Ã£o']},
+        ],
+
+        procedimentos: [
+          {especialidade:'Consultas', itens:['ClÃ­nica Geral','Pediatria','Ginecologia','Cardiologia']},
+          {especialidade:'Exames simples', itens:['Hemograma','Glicemia','Raio-X','Eletrocardiograma (ECG)']},
+          {especialidade:'Exames especiais', itens:['RessonÃ¢ncia MagnÃ©tica','Tomografia','Colonoscopia']},
+          {especialidade:'Terapias', itens:['Fisioterapia','Fonoaudiologia','Terapia Ocupacional']}
+        ],
+        carencias: [
+          {item:'Consultas', dias:30, obs:''},
+          {item:'Exames simples', dias:60, obs:''},
+          {item:'Exames especiais', dias:120, obs:''},
+          {item:'InternaÃ§Ã£o', dias:180, obs:''},
+          {item:'Parto', dias:300, obs:'Conforme legislaÃ§Ã£o/ANS'}
+        ],
+        planos: [
+          // SÃ£o Paulo
+          {id:'sp-pf-ess',  rotulo:'PF Essencial SP',         tipo:'PF',  precoDesde:'R$ 119,90', redeResumo:'Rede regional (SP Capital/GRANDE SP)',           hospitalSugestaoId:'sp-spc'},
+          {id:'sp-mei-sm',  rotulo:'MEI Smart SP',            tipo:'MEI', precoDesde:'R$ 99,90',  redeResumo:'Rede regional + credenciadas (SP)',            hospitalSugestaoId:'sp-oc'},
+          {id:'sp-pme-emp', rotulo:'PME Empresarial SP',      tipo:'PME', precoDesde:'R$ 89,90',  redeResumo:'Rede ampla SP (planos empresariais)',          hospitalSugestaoId:'sp-cps'},
+          // Rio de Janeiro
+          {id:'rj-pf-ess',  rotulo:'PF Essencial RJ',         tipo:'PF',  precoDesde:'R$ 114,90', redeResumo:'Rede regional (RJ Capital/Grande Rio)',         hospitalSugestaoId:'rj-rjz'},
+          {id:'rj-mei-sm',  rotulo:'MEI Smart RJ',            tipo:'MEI', precoDesde:'R$ 95,90',  redeResumo:'Rede regional + credenciadas (RJ)',            hospitalSugestaoId:'rj-tij'},
+          {id:'rj-pme-emp', rotulo:'PME Empresarial RJ',      tipo:'PME', precoDesde:'R$ 87,90',  redeResumo:'Rede ampla RJ (planos empresariais)',          hospitalSugestaoId:'rj-dc'},
+          // Opcional (cobertura combinada SP/RJ)
+          {id:'srj-nac',    rotulo:'Nacional Plus SP/RJ',     tipo:'PME', precoDesde:'R$ 129,90', redeResumo:'Rede expandida com cobertura SP/RJ (ilustr.)', hospitalSugestaoId:'sp-spc'}
+        ],
+
+        // ===== Filtros de Hospitais =====
+        hosp: {
+          uf: '',
+          cidade: '',
+          tipo: '',
+          busca: '',
+          get ufs() {
+            const set = new Set(Alpine.store('site').hospitais.map(h => h.uf));
+            return Array.from(set).sort();
+          },
+          get cidades() {
+            const root = Alpine.store('site');
+            const set = new Set(root.hospitais
+              .filter(h => !this.uf || h.uf === this.uf)
+              .map(h => h.cidade));
+            return Array.from(set).sort();
+          },
+          get filtrados() {
+            const root = Alpine.store('site');
+            const q = (this.busca || '').toLowerCase();
+            return root.hospitais.filter(h => {
+              const matchUF = !this.uf || h.uf === this.uf;
+              const matchCid = !this.cidade || h.cidade === this.cidade;
+              const matchTipo = !this.tipo || (h.servicos || []).includes(this.tipo);
+              const matchBusca = !q || [h.nome, h.endereco, h.cidade, h.uf].join(' ').toLowerCase().includes(q);
+              return matchUF && matchCid && matchTipo && matchBusca;
+            });
+          }
+        },
+
+        // ===== FormulÃ¡rio / Modais =====
+        faixas: [
+          { key: 'faixa_0_18', rotulo: '0â€“18' },
+          { key: 'faixa_19_23', rotulo: '19â€“23' },
+          { key: 'faixa_24_28', rotulo: '24â€“28' },
+          { key: 'faixa_29_33', rotulo: '29â€“33' },
+          { key: 'faixa_34_38', rotulo: '34â€“38' },
+          { key: 'faixa_39_43', rotulo: '39â€“43' },
+          { key: 'faixa_44_48', rotulo: '44â€“48' },
+          { key: 'faixa_49_53', rotulo: '49â€“53' },
+          { key: 'faixa_54_58', rotulo: '54â€“58' },
+          { key: 'faixa_59p',  rotulo: '59+' }
+        ],
+        form: {
+          nome: '',
+          whats: '',
+          email: '',
+          temCnpj: '',
+          cnpj: '',
+          plano: '',
+          hospital: '',
+          faixas: {
+            faixa_0_18: 0, faixa_19_23: 0, faixa_24_28: 0, faixa_29_33: 0, faixa_34_38: 0,
+            faixa_39_43: 0, faixa_44_48: 0, faixa_49_53: 0, faixa_54_58: 0, faixa_59p: 0
+          },
+          totalVidas: 0,
+          obs: ''
+        },
+
+        modalDetalhes: { aberto: false, plano: null, hospital: null },
+        modalCotacao:  { aberto: false },
+
+        init() { document.getElementById('year').textContent = new Date().getFullYear(); },
+
+        openDetalhes(plano) {
+          this.modalDetalhes.plano = plano;
+          const hosp = this.hospitais.find(x => x.id === plano.hospitalSugestaoId);
+          this.modalDetalhes.hospital = hosp ? hosp.nome : null;
+          this.modalDetalhes.aberto = true;
+        },
+        closeDetalhes() { this.modalDetalhes.aberto = false; },
+
+        openCotacao(hospitalNome = null, plano = null) {
+          if (hospitalNome) this.form.hospital = hospitalNome;
+          if (plano) this.form.plano = plano.rotulo;
+          this.modalCotacao.aberto = true;
+        },
+        closeCotacao() { this.modalCotacao.aberto = false; },
+
+        calcularVidas() {
+          this.form.totalVidas = Object.values(this.form.faixas)
+            .map(v => parseInt(v || 0, 10))
+            .reduce((a,b) => a+b, 0);
+        },
+
+        validar() {
+          if (!this.form.nome?.trim()) { alert('Informe seu nome.'); return false; }
+          if (!this.form.whats?.trim()) { alert('Informe seu WhatsApp.'); return false; }
+          if (!this.form.temCnpj) { alert('Informe se possui CNPJ.'); return false; }
+          if (this.form.temCnpj === 'Sim' && !this.form.cnpj?.trim()) { alert('Informe o CNPJ.'); return false; }
+          return true;
+        },
+
+        formatarWhatsParaLink(w) {
+          const nums = (w || '').replace(/\D/g, '');
+          if (nums.startsWith('55')) return nums;
+          return '55' + nums;
+        },
+
+        montarMensagem() {
+          const nome = this.form.nome.trim();
+          const plano = this.form.plano ? this.form.plano : 'Plano Hapvida';
+          const hospital = this.form.hospital?.trim() ? this.form.hospital.trim() : 'Sem preferÃªncia';
+          const cnpjOuNao = this.form.temCnpj === 'Sim' ? (this.form.cnpj?.trim() || 'CNPJ a informar') : 'NÃ£o';
+          const whatsLink = this.formatarWhatsParaLink(this.form.whats);
+          this.calcularVidas();
+          const f = this.form.faixas;
+
+          const linhas = [
+            `OlÃ¡, eu me chamo ${nome} gostaria de realizar uma cotaÃ§Ã£o do plano Hapvida, esses sÃ£o os meus dados:`,
+            `- Plano de interesse: ${plano}`,
+            `- Hospital preferido: ${hospital}`,
+            `- CNPJ: ${cnpjOuNao}`,
+            `- WhatsApp para contato: +${whatsLink}`,
+            `- Total de vidas: ${this.form.totalVidas}`,
+            `- Faixas: 0â€“18(${f.faixa_0_18}), 19â€“23(${f.faixa_19_23}), 24â€“28(${f.faixa_24_28}), 29â€“33(${f.faixa_29_33}), 34â€“38(${f.faixa_34_38}), 39â€“43(${f.faixa_39_43}), 44â€“48(${f.faixa_44_48}), 49â€“53(${f.faixa_49_53}), 54â€“58(${f.faixa_54_58}), 59+(${f.faixa_59p})`
+          ];
+          if (this.form.obs?.trim()) linhas.push(`- ObservaÃ§Ãµes: ${this.form.obs.trim()}`);
+          return linhas.join(' \n');
+        },
+
+        enviarCotacao() {
+          if (!this.validar()) return;
+          const msg = this.montarMensagem();
+          this.abrirWhatsComMensagem(msg);
+          this.closeCotacao();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
